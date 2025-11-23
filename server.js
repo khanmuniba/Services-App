@@ -5,6 +5,7 @@ import morgan from "morgan";
 import connectDB from "./configs/db.js";
 import adminRoutes from "./routes/adminRoute.js";
 import vendorRoute from './routes/vendorRoutes.js'
+import customerRoute from './routes/customerRoute.js'
 dotenv.config();
 connectDB();
 
@@ -23,9 +24,11 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 //admin routes 
-app.use("/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use("/api/vendor", vendorRoute);
+
+app.use("/api/customer",customerRoute)
 
 
 app.get("/", (req, res) => {

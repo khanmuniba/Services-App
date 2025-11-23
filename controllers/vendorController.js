@@ -3,9 +3,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import sendMail from "../utils/sendMail.js";
 
-// -----------------------------------------
+
 // ADMIN CREATES VENDOR
-// -----------------------------------------
+
 export const createVendor = async (req, res) => {
   try {
     const {
@@ -19,13 +19,16 @@ export const createVendor = async (req, res) => {
       description,
     } = req.body;
 
+    // Check if vendor exists
     const exists = await Vendor.findOne({ email });
     if (exists) {
       return res.status(400).json({ message: "Vendor email already exists" });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create vendor
     const newVendor = await Vendor.create({
       vendorName,
       businessName,
@@ -37,31 +40,29 @@ export const createVendor = async (req, res) => {
       description,
     });
 
-    //  Email credentials to vendor
-    await sendMail(
-      email,
-      "Your Vendor Login Credentials",
-      `Hello ${vendorName},
-
-Your Vendor Account Has Been Created.
-
-Login Email: ${email}
-Password: ${password}
-
-Use the mobile app to log in.
-
-Regards,
-Admin`
-    );
+    // Send email and wait for completion
+    try {
+      await sendMail(
+        email,
+        "Your Vendor Login Credentials",
+        `Hello ${vendorName},\n\nYour Vendor Account Has Been Created.\n\nLogin Email: ${email}\nPassword: ${password}\n\nUse the mobile app to log in.\n\nRegards,\nAdmin`
+      );
+      console.log("📩 Vendor email sent successfully");
+    } catch (err) {
+      console.error("❌ Error sending email:", err);
+    }
 
     return res.status(201).json({
       message: "Vendor account created successfully",
       vendor: newVendor,
     });
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Error creating vendor", error: err });
   }
 };
+
 
 // VENDOR LOGIN
 
@@ -87,6 +88,11 @@ export const loginVendor = async (req, res) => {
       message: "Vendor login successful",
       token,
       role: "vendor",
+        user: {
+    vendorName: vendor.vendorName,
+    email: vendor.email,
+    businessName: vendor.businessName,
+  },
     });
   } catch (err) {
     res.status(500).json({ message: "Vendor login failed", error: err });

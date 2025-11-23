@@ -10,6 +10,7 @@ const vendorSchema = new mongoose.Schema(
     password: { type: String, required: true },
 
     serviceCategory: { type: String, required: true },
+    subService: { type: String, required: true },
     businessAddress: { type: String, required: true },
     description: { type: String },
   },
