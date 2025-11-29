@@ -18,10 +18,10 @@ export const loginVendor = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
 
     const token = jwt.sign(
-      { id: vendor._id, role: "vendor" },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+  { id: vendor._id, role: "vendor" }, // <- use _id from DB
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
 
     return res.json({
       message: "Vendor login successful",
@@ -67,22 +67,30 @@ export const createVendor = async (req, res) => {
 
 export const getVendorProfile = async (req, res) => {
   try {
-    const vendorId = req.vendor.id;
+    const vendorId = req.vendor._id; // assuming vendorAuth middleware sets req.vendor
 
-    const vendor = await Vendor.findById(vendorId).select(
-      "name email phone businessName serviceArea rating jobsDone successRate"
-    );
+    const vendor = await Vendor.findById(vendorId);
 
     if (!vendor) {
-      return res.status(404).json({ message: "Vendor not found" });
+      return res.status(404).json({ success: false, message: "Vendor not found" });
     }
 
     res.status(200).json({
       success: true,
-      data: vendor,
+      user: {
+        vendorName: vendor.vendorName || "Vendor Name",
+        email: vendor.email || "",
+        phoneNumber: vendor.phoneNumber || "N/A",
+        businessName: vendor.businessName || "",
+        businessAddress: vendor.businessAddress || "N/A",
+        rating: vendor.rating || 0,
+        jobsDone: vendor.jobsDone || 0,
+        successRate: vendor.successRate || "0%",
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error fetching vendor profile:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

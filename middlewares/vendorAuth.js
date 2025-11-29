@@ -1,18 +1,26 @@
 import jwt from "jsonwebtoken";
+import Vendor from "../models/vendorModel.js";
 
-export default function vendorAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer "))
-    return res.status(401).json({ message: "No token provided" });
-
-  const token = authHeader.split(" ")[1];
-
+export const vendorAuth = async (req, res, next) => {
   try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer "))
+      return res.status(401).json({ message: "No token provided" });
+
+    const token = authHeader.split(" ")[1];
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.vendor = decoded; // put vendor id here
+
+    // Fetch vendor from DB using id from token
+    const vendor = await Vendor.findById(decoded.id);
+    if (!vendor) return res.status(404).json({ message: "Vendor not found" });
+
+    req.vendor = vendor; // ✅ attach full vendor document
     next();
   } catch (err) {
+    console.error(err);
     return res.status(403).json({ message: "Invalid or expired token" });
   }
-}
+};
+export default vendorAuth;

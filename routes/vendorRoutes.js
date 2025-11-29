@@ -17,7 +17,7 @@ router.post("/login", loginVendor);
 //create vendor route ,controller for this is in the admin controller
 router.post("/create", createVendor);
 // get Vendor Profile
-router.get("/profile", vendorAuth, getVendorProfile);
+router.get("/profile",vendorAuth, getVendorProfile);
 
 // booking routes 
 
