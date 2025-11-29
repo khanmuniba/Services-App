@@ -67,30 +67,42 @@ export const createVendor = async (req, res) => {
 
 export const getVendorProfile = async (req, res) => {
   try {
-    const vendorId = req.vendor._id; // assuming vendorAuth middleware sets req.vendor
+    const vendorId = req.vendor._id;
 
     const vendor = await Vendor.findById(vendorId);
 
     if (!vendor) {
-      return res.status(404).json({ success: false, message: "Vendor not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Vendor not found",
+      });
     }
 
     res.status(200).json({
       success: true,
-      user: {
-        vendorName: vendor.vendorName || "Vendor Name",
-        email: vendor.email || "",
-        phoneNumber: vendor.phoneNumber || "N/A",
-        businessName: vendor.businessName || "",
-        businessAddress: vendor.businessAddress || "N/A",
-        rating: vendor.rating || 0,
-        jobsDone: vendor.jobsDone || 0,
+      data: {
+        vendorName: vendor.vendorName,
+        email: vendor.email,
+        phoneNumber: vendor.phoneNumber,
+        businessName: vendor.businessName,
+        serviceCategory: vendor.serviceCategory,
+        subService: vendor.subService,
+
+        // ⭐ Do NOT change model field — just map it for UI
+        serviceArea: vendor.businessAddress || "Not Provided",
+
+        // ⭐ Convert "jobs" from model into "jobsDone" for UI
+        jobsDone: vendor.jobs || 0,
+
         successRate: vendor.successRate || "0%",
-      },
+        rating: vendor.rating || 0,
+      }
     });
+
   } catch (error) {
     console.error("Error fetching vendor profile:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
