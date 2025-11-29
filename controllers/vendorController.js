@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
  
 
 // VENDOR LOGIN
-
 export const loginVendor = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -38,12 +37,7 @@ export const loginVendor = async (req, res) => {
     res.status(500).json({ message: "Vendor login failed", error: err });
   }
 };
-
-
-
 // Create a new vendor
-
-
 export const createVendor = async (req, res) => {
   console.log("REQ BODY RECEIVED BY BACKEND:", req.body);
   try {
@@ -65,6 +59,30 @@ export const createVendor = async (req, res) => {
   } catch (err) {
     console.error("Error creating vendor:", err);
     res.status(500).json({ success: false, message: "Error creating vendor", error: err.message });
+  }
+};
+//Vendor Profile 
+
+
+
+export const getVendorProfile = async (req, res) => {
+  try {
+    const vendorId = req.vendor.id;
+
+    const vendor = await Vendor.findById(vendorId).select(
+      "name email phone businessName serviceArea rating jobsDone successRate"
+    );
+
+    if (!vendor) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: vendor,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

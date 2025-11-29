@@ -44,7 +44,7 @@ const vendorSchema = new mongoose.Schema(
       type: String,
     },
 
-    /* 🔥 Added Required Fields for Admin Panel UI */
+    // ==== Required for UI and Admin ====
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
@@ -65,6 +65,12 @@ const vendorSchema = new mongoose.Schema(
     earnings: {
       type: Number,
       default: 0,
+    },
+
+    // ⭐ **Added Only This Field**
+    successRate: {
+      type: String,
+      default: "0%",
     },
   },
   { timestamps: true }
