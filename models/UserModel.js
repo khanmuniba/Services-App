@@ -28,11 +28,28 @@ const userSchema = new mongoose.Schema(
       default: "customer",
     },
 
-    // // Optional fields for  future app growth
-    // isVerified: {
-    //   type: Boolean,
-    //   default: false,
-    // },
+    // 👉 Added for AdminUsers screen UI
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
+
+    bookings: {
+      type: Number,
+      default: 0,
+    },
+
+    joinedDate: {
+      type: Date,
+      default: Date.now,
+    },
 
     createdAt: {
       type: Date,

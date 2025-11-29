@@ -1,68 +1,8 @@
 import Vendor from "../models/vendorModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import sendMail from "../utils/sendMail.js";
 
-
-// ADMIN CREATES VENDOR
-
-export const createVendor = async (req, res) => {
-  try {
-    const {
-      vendorName,
-      businessName,
-      phoneNumber,
-      email,
-      password,
-      serviceCategory,
-      businessAddress,
-      description,
-    } = req.body;
-
-    // Check if vendor exists
-    const exists = await Vendor.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: "Vendor email already exists" });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create vendor
-    const newVendor = await Vendor.create({
-      vendorName,
-      businessName,
-      phoneNumber,
-      email,
-      password: hashedPassword,
-      serviceCategory,
-      businessAddress,
-      description,
-    });
-
-    // Send email and wait for completion
-    try {
-      await sendMail(
-        email,
-        "Your Vendor Login Credentials",
-        `Hello ${vendorName},\n\nYour Vendor Account Has Been Created.\n\nLogin Email: ${email}\nPassword: ${password}\n\nUse the mobile app to log in.\n\nRegards,\nAdmin`
-      );
-      console.log("📩 Vendor email sent successfully");
-    } catch (err) {
-      console.error("❌ Error sending email:", err);
-    }
-
-    return res.status(201).json({
-      message: "Vendor account created successfully",
-      vendor: newVendor,
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error creating vendor", error: err });
-  }
-};
-
+ 
 
 // VENDOR LOGIN
 
@@ -98,3 +38,33 @@ export const loginVendor = async (req, res) => {
     res.status(500).json({ message: "Vendor login failed", error: err });
   }
 };
+
+
+
+// Create a new vendor
+
+
+export const createVendor = async (req, res) => {
+  console.log("REQ BODY RECEIVED BY BACKEND:", req.body);
+  try {
+    const { vendorName, businessName, email, phoneNumber, password, serviceCategory, subService, businessAddress, description } = req.body;
+
+    if (!vendorName || !businessName || !email || !phoneNumber || !password || !serviceCategory || !subService || !businessAddress) {
+      return res.status(400).json({ message: "Please fill in all required fields" });
+    }
+
+    const existingVendor = await Vendor.findOne({ email });
+    if (existingVendor) return res.status(400).json({ message: "Vendor already exists" });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newVendor = new Vendor({ vendorName, businessName, email, phoneNumber, password: hashedPassword, serviceCategory, subService, businessAddress, description });
+
+    const savedVendor = await newVendor.save();
+    res.status(201).json({ success: true, data: savedVendor });
+  } catch (err) {
+    console.error("Error creating vendor:", err);
+    res.status(500).json({ success: false, message: "Error creating vendor", error: err.message });
+  }
+};
+

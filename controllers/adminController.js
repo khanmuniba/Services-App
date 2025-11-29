@@ -4,6 +4,8 @@ import User from "../models/UserModel.js";
 import Vendor from "../models/vendorModel.js";
 import Booking from "../models/bookingModel.js";
 import Payment from "../models/paymentModel.js";
+import sendMail from "../utils/sendMail.js";
+import bcrypt from "bcryptjs";
 dotenv.config();
 // admin login
 
@@ -34,7 +36,7 @@ export const adminLogin = (req, res) => {
 export const getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
-    const activeVendors = await Vendor.countDocuments({ isActive: true });
+    const activeVendors = await Vendor.countDocuments();
     const bookingsCount = await Booking.countDocuments();
 
     const revenueAgg = await Payment.aggregate([
@@ -58,3 +60,39 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+// get all users
+
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().sort({ createdAt: -1 });
+
+    const formattedUsers = users.map(u => ({
+      id: u._id,
+      name: u.name,
+      email: u.email,
+      phone: u.phone,
+      status: u.status.toLowerCase(),
+      bookings: u.bookings,
+      joined: new Date(u.joinedDate).toLocaleString('en-US', {
+        month: 'short',
+        year: 'numeric'
+      })
+    }));
+
+    res.json({
+      success: true,
+      users: formattedUsers
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+
+
+
+
