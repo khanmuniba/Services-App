@@ -33,6 +33,7 @@ if (process.env.NODE_ENV === "development") {
 app.use("/api/admin", adminRoute);
 app.use("/api/vendor", vendorRoute);
 app.use("/api/customer", customerRoute);
+ app.get("/ping", (req, res) => res.json({ message: "Server is live!" }));
 
 // ✅ Health check
 app.get("/", (req, res) => {
