@@ -90,6 +90,41 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+// to get ALL the routes at the ADMINVENDOR screen
+
+
+
+
+
+export const getAllVendors = async (req, res) => {
+  try {
+    const vendors = await Vendor.find().sort({ createdAt: -1 });
+
+    const formatted = vendors.map(v => ({
+      _id: v._id,
+      vendorName: v.vendorName,
+      businessName: v.businessName,
+      serviceCategory: v.serviceCategory,
+      rating: v.rating || 0,
+      jobs: v.jobs || 0,
+      status: v.status || "pending",
+      earnings: v.earnings || 0,
+      blocked: v.blocked || false
+    }));
+
+    res.status(200).json({
+      success: true,
+      vendors: formatted
+    });
+
+  } catch (error) {
+    console.error("Error fetching vendors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching vendors"
+    });
+  }
+};
 
 
 

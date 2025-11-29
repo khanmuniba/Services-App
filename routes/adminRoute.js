@@ -1,5 +1,5 @@
 import express from "express";
-import { adminLogin, getAllUsers, getDashboardStats } from "../controllers/adminController.js";
+import { adminLogin, getAllUsers, getAllVendors, getDashboardStats } from "../controllers/adminController.js";
 import { getRecentActivity } from "../controllers/activityController.js";
 import adminAuth from "../middlewares/adminAuth.js";
 
@@ -14,6 +14,7 @@ router.get("/recent-activity", adminAuth, getRecentActivity);
 
 router.get("/getUser",getAllUsers)
 
+router.get("/getVendor",getAllVendors)
 
 
 export default router;
