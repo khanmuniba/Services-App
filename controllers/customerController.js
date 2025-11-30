@@ -1,8 +1,9 @@
 import User from "../models/UserModel.js";
-// import vendorModel from "../models/vendorModel.js";
-import Vendor from "../models/vendorModel.js";
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Vendor from "../models/vendorModel.js";
+
 
 
 //  USER REGISTRATION
@@ -105,34 +106,48 @@ export const loginUser = async (req, res) => {
 
 export const getPopularServices = async (req, res) => {
   try {
-  const data = await Vendor.aggregate([
+    console.log("Loaded Vendor model:", Vendor?.modelName);
+    const data = await Vendor.aggregate([
       { $match: { status: "approved" } },
+
+      // Group vendors by serviceCategory
       {
         $group: {
           _id: "$serviceCategory",
-          services: {
-            $push: {
-              vendorName: "$vendorName",
-              businessName: "$businessName",
-              subService: "$subService",
-              rating: "$rating",
-              jobs: "$jobs",
-            },
-          },
-        },
+          avgRating: { $avg: "$rating" },
+          topRating: { $max: "$rating" },
+          vendorCount: { $sum: 1 },
+          description: { $first: "$subService" } // take first subService as description
+        }
       },
+
+      // Format fields
+      {
+        $project: {
+          _id: 0,
+          serviceCategory: "$_id",
+          description: 1,
+          rating: "$avgRating",
+          topRating: 1,
+          vendorCount: 1
+        }
+      },
+
+      // Sort by highest rating first
+      { $sort: { rating: -1 } }
     ]);
 
-   
+    res.json({ success: true, data });
 
   } catch (err) {
     console.log("POPULAR SERVICES ERROR →", err);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Failed to fetch popular services",
       error: err.message,
     });
   }
 };
+
 
 

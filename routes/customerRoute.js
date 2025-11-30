@@ -7,4 +7,6 @@ router.post("/register",registerUser)
 router.post("/login", loginUser);
 // for service
 router.get("/popular-services", getPopularServices);
+
+
 export default router;
