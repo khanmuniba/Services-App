@@ -5,6 +5,7 @@ import adminAuth from "../middlewares/adminAuth.js";
 
 
 const router = express.Router();
+// router.get("/test", (req, res) => res.json({ message: "Admin route is working" }));
 router.get("/test", (req, res) => res.json({ message: "Admin route is working" }));
 
 

@@ -75,7 +75,7 @@ const vendorSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-console.log("Vendor model initialized");
+
 
 const Vendor = mongoose.connection.models.Vendor || mongoose.model("Vendor", vendorSchema);
 export default Vendor;
