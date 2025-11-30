@@ -7,45 +7,34 @@ import adminRoute from "./routes/adminRoute.js";
 import vendorRoute from "./routes/vendorRoutes.js";
 import customerRoute from "./routes/customerRoute.js";
 
-dotenv.config();
-connectDB();
-
+dotenv.config()
+connectDB()
 const app = express();
-
-
-
-app.use(cors()); // allows all origins
-
-
-
-// ✅ Body parsing
+ 
+// Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// ✅ Logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 } else {
-  app.use(morgan("combined")); // better for production logs
+  app.use(morgan("combined"));
 }
 
-// ✅ Routes
+// Routes
 app.use("/api/admin", adminRoute);
 app.use("/api/vendor", vendorRoute);
 app.use("/api/customer", customerRoute);
- app.get("/ping", (req, res) => res.json({ message: "Server is live!" }));
 
-// ✅ Health check
-app.get("/", (req, res) => {
-  res.send("Backend is running...");
-});
+app.get("/ping", (req, res) => res.json({ message: "Server is live!" }));
+app.get("/", (req, res) => res.send("Backend is running..."));
 
-// ✅ 404 handler
+// 404 handler
 app.use((req, res, next) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// ✅ Global error handler
+// Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
@@ -54,8 +43,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ✅ Start server
+// ✅ Connect DB and start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+
+const startServer = async () => { // wait for DB connection first
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+};
+
+startServer();

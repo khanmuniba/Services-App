@@ -1,4 +1,6 @@
 import User from "../models/UserModel.js";
+// import vendorModel from "../models/vendorModel.js";
+import Vendor from "../models/vendorModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -98,4 +100,39 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-//manage Customers on AdminUser screen 
+// to display popular services 
+
+
+export const getPopularServices = async (req, res) => {
+  try {
+  const data = await Vendor.aggregate([
+      { $match: { status: "approved" } },
+      {
+        $group: {
+          _id: "$serviceCategory",
+          services: {
+            $push: {
+              vendorName: "$vendorName",
+              businessName: "$businessName",
+              subService: "$subService",
+              rating: "$rating",
+              jobs: "$jobs",
+            },
+          },
+        },
+      },
+    ]);
+
+   
+
+  } catch (err) {
+    console.log("POPULAR SERVICES ERROR →", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch popular services",
+      error: err.message,
+    });
+  }
+};
+
+

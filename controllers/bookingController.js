@@ -10,7 +10,7 @@ export const getVendorBookings = async (req, res) => {
     let { vendorId } = req.params;
 
     // Remove leading colon if any
-    if (vendorId.startsWith(":")) vendorId = vendorId.slice(1);
+    // if (vendorId.startsWith(":")) vendorId = vendorId.slice(1);
 
     // Check valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(vendorId)) {
@@ -18,8 +18,8 @@ export const getVendorBookings = async (req, res) => {
     }
 
     // ✅ Use 'new' with ObjectId
-    const bookings = await Booking.find({ vendorId: new mongoose.Types.ObjectId(vendorId) })
-                                  .sort({ createdAt: -1 });
+    const bookings = await Booking.find({ vendorId }).sort({ createdAt: -1 });
+
 
     res.status(200).json({ success: true, bookings });
   } catch (error) {
