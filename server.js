@@ -20,7 +20,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // Basic test routes
-// app.get("/ping", (req, res) => res.json({ message: "Server is live!" }));
+app.get("/ping", (req, res) => res.json({ message: "Server is live!" }));
 app.get("/", (req, res) => res.send("Backend is running..."));
 
 // 404 handler
