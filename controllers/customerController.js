@@ -3,7 +3,11 @@ import User from "../models/UserModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Vendor from "../models/vendorModel.js";
+// import dayjs from "dayjs";
+// import relativeTime from "dayjs/plugin/relativeTime";
+// import Booking from "../models/bookingModel.js";
 
+// dayjs.extend(relativeTime);
 // register Customer 
 export const registerUser = async (req, res) => {
   try {
@@ -198,7 +202,7 @@ export const getPopularServices = async (req, res) => {
     // Fetch top 10 vendors sorted by rating (descending)
     const vendors = await Vendor.find({ status: "approved", blocked: false })
       .sort({ rating: -1 })
-      .limit(10)
+      .limit(5)
       .select(
         "vendorName businessName serviceCategory subService rating jobs description"
       );
@@ -210,23 +214,23 @@ export const getPopularServices = async (req, res) => {
   }
 };
 
-// Get recently completed services (most jobs done recently)
-export const getRecentServices = async (req, res) => {
-  try {
-    // Sort by latest updated vendors with jobs > 0
-    const vendors = await Vendor.find({ status: "approved", blocked: false, jobs: { $gt: 0 } })
-      .sort({ updatedAt: -1 }) // or createdAt if you want newest vendors
-      .limit(10)
-      .select(
-        "vendorName businessName serviceCategory subService rating jobs description"
-      );
 
-    res.status(200).json({ success: true, data: vendors });
-  } catch (error) {
-    console.error("Error fetching recent services:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-};
+// export const getRecentServices = async (req, res) => {
+//   try {
+//     // Sort by latest updated vendors with jobs > 0
+//     const vendors = await Vendor.find({ status: "approved", blocked: false, jobs: { $gt: 0 } })
+//       .sort({ updatedAt: -1 }) // or createdAt if you want newest vendors
+//       .limit(10)
+//       .select(
+//         "vendorName businessName serviceCategory subService rating jobs description"
+//       );
+
+//     res.status(200).json({ success: true, data: vendors });
+//   } catch (error) {
+//     console.error("Error fetching recent services:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
 
 // Get recent activity (recently completed jobs)
 export const getRecentActivity = async (req, res) => {
@@ -247,3 +251,6 @@ export const getRecentActivity = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+

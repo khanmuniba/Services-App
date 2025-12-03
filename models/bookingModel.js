@@ -14,9 +14,8 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
 
-    service: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Service",
+    subService: {
+      type: String, // store the subService directly from Vendor
       required: true,
     },
 
