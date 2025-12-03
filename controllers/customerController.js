@@ -6,27 +6,24 @@ import Vendor from "../models/vendorModel.js";
 
 
 
-// register Customer 
 
+
+// register Customer 
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // Validate required fields
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const user = await User.create({
       name,
       email,
@@ -34,24 +31,24 @@ export const registerUser = async (req, res) => {
       role: role || "customer",
     });
 
-    // Generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    // Return success with user info and token
+    // ⭐ Remove password + return all fields
+    const { password: _, ...safeUser } = user.toObject();
+
     res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        ...safeUser,
+        id: user._id, // convert _id → id
       },
       token,
     });
+
   } catch (error) {
     console.error("Registration Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -60,103 +57,143 @@ export const registerUser = async (req, res) => {
 
 
 
-//  USER LOGIN
+//Login User 
 
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Validate
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password required" });
     }
 
-    // 2. Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // 3. Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // 4. Generate JWT
     const token = jwt.sign(
-      {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-      },
+      { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    //  Return response
+    const { password: _, ...safeUser } = user.toObject();
+
     res.status(200).json({
       message: "Login successful",
       token,
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+        ...safeUser,
+        id: user._id
+      }
     });
+
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-// to display popular services 
 
 
-export const getPopularServices = async (req, res) => {
+
+
+
+
+// to store location from location Selector 
+export const updateUserLocation = async (req, res) => {
   try {
-    console.log("Loaded Vendor model:", Vendor?.modelName);
-    const data = await Vendor.aggregate([
-      { $match: { status: "approved" } },
+    const { id } = req.params;
+    const { location } = req.body;
+    if (!location) return res.status(400).json({ message: "Location is required" });
 
-      // Group vendors by serviceCategory
-      {
-        $group: {
-          _id: "$serviceCategory",
-          avgRating: { $avg: "$rating" },
-          topRating: { $max: "$rating" },
-          vendorCount: { $sum: 1 },
-          description: { $first: "$subService" } // take first subService as description
-        }
-      },
+    const user = await User.findByIdAndUpdate(id, { location }, { new: true }).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-      // Format fields
-      {
-        $project: {
-          _id: 0,
-          serviceCategory: "$_id",
-          description: 1,
-          rating: "$avgRating",
-          topRating: 1,
-          vendorCount: 1
-        }
-      },
-
-      // Sort by highest rating first
-      { $sort: { rating: -1 } }
-    ]);
-
-    res.json({ success: true, data });
-
+    res.json({ message: "Location updated", user });
   } catch (err) {
-    console.log("POPULAR SERVICES ERROR →", err);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch popular services",
-      error: err.message,
-    });
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+/**
+ * PUT /api/user/update-total/:id
+ * Body: { amount: 50, mode: "add" }  // mode: "add" or "set"
+ */
+export const updateTotalSpent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let { amount, mode } = req.body;
+
+    // Convert amount to number safely
+    const amountNum = Number(amount);
+
+    if (isNaN(amountNum)) {
+      return res.status(400).json({ message: "Numeric amount required" });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (mode === "set") {
+      user.totalSpent = amountNum;
+    } else {
+      // default mode: add
+      user.totalSpent = (user.totalSpent || 0) + amountNum;
+    }
+
+    await user.save();
+
+    const userSafe = user.toObject();
+    delete userSafe.password;
+
+    res.json({
+      message: "totalSpent updated",
+      user: userSafe,
+    });
+
+  } catch (err) {
+    console.error("Update TotalSpent Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+/**
+ * GET /api/user/profile/:id
+ */
+export const getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // format response if you want
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      status: user.status,
+      location: user.location,
+      bookings: user.bookings,
+      totalSpent: user.totalSpent,
+      joinedDate: user.joinedDate,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 
 

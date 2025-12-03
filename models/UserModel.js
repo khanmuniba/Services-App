@@ -28,7 +28,6 @@ const userSchema = new mongoose.Schema(
       default: "customer",
     },
 
-    // 👉 Added for AdminUsers screen UI
     phone: {
       type: String,
       default: "",
@@ -41,7 +40,20 @@ const userSchema = new mongoose.Schema(
       default: "active",
     },
 
+    // 👉 Save user-selected location
+    location: {
+      type: String,  // e.g. "Dubai, Downtown"
+      default: "",
+      trim: true,
+    },
+
     bookings: {
+      type: Number,
+      default: 0,
+    },
+
+    // 👉 Total amount spent
+    totalSpent: {
       type: Number,
       default: 0,
     },

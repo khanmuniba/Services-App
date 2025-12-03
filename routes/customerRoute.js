@@ -1,12 +1,22 @@
 import express from "express";
-import {  getPopularServices, loginUser, registerUser } from "../controllers/customerController.js";
+import {  getUserProfile, loginUser, registerUser, updateTotalSpent, updateUserLocation } from "../controllers/customerController.js";
 
 const router = express.Router();
 // routes
 router.post("/register",registerUser)
 router.post("/login", loginUser);
-// for service
-router.get("/popular-services", getPopularServices);
+
+//for customer Profile
+// update location
+router.put("/update-location/:id", updateUserLocation);
+
+// update totalSpent (add or set)
+router.put("/update-total/:id", updateTotalSpent);
+
+// get profile
+router.get("/profile/:id", getUserProfile);
+
+
 
 
 export default router;
