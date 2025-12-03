@@ -4,10 +4,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Vendor from "../models/vendorModel.js";
 
-
-
-
-
 // register Customer 
 export const registerUser = async (req, res) => {
   try {
@@ -101,10 +97,6 @@ export const loginUser = async (req, res) => {
 };
 
 
-
-
-
-
 // to store location from location Selector 
 export const updateUserLocation = async (req, res) => {
   try {
@@ -196,4 +188,62 @@ export const getUserProfile = async (req, res) => {
 
 
 
+/** 
+ * COntrollers for the Home Screennnn */ 
 
+
+// Get top popular services by rating
+export const getPopularServices = async (req, res) => {
+  try {
+    // Fetch top 10 vendors sorted by rating (descending)
+    const vendors = await Vendor.find({ status: "approved", blocked: false })
+      .sort({ rating: -1 })
+      .limit(10)
+      .select(
+        "vendorName businessName serviceCategory subService rating jobs description"
+      );
+
+    res.status(200).json({ success: true, data: vendors });
+  } catch (error) {
+    console.error("Error fetching popular services:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Get recently completed services (most jobs done recently)
+export const getRecentServices = async (req, res) => {
+  try {
+    // Sort by latest updated vendors with jobs > 0
+    const vendors = await Vendor.find({ status: "approved", blocked: false, jobs: { $gt: 0 } })
+      .sort({ updatedAt: -1 }) // or createdAt if you want newest vendors
+      .limit(10)
+      .select(
+        "vendorName businessName serviceCategory subService rating jobs description"
+      );
+
+    res.status(200).json({ success: true, data: vendors });
+  } catch (error) {
+    console.error("Error fetching recent services:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Get recent activity (recently completed jobs)
+export const getRecentActivity = async (req, res) => {
+  try {
+    const recentVendors = await Vendor.find({
+      status: "approved",
+      blocked: false,
+    })
+      .sort({ updatedAt: -1 }) // most recent first
+      .limit(2) // only 2 vendors
+      .select(
+        "vendorName businessName serviceCategory subService rating jobs description updatedAt"
+      );
+
+    res.status(200).json({ success: true, data: recentVendors });
+  } catch (error) {
+    console.error("Error fetching recent activity:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

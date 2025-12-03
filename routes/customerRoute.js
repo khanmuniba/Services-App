@@ -1,12 +1,13 @@
 import express from "express";
-import {  getUserProfile, loginUser, registerUser, updateTotalSpent, updateUserLocation } from "../controllers/customerController.js";
+import {  getPopularServices, getRecentActivity, getUserProfile, loginUser, registerUser, updateTotalSpent, updateUserLocation } from "../controllers/customerController.js";
 
 const router = express.Router();
-// routes
+// routes for Login 
 router.post("/register",registerUser)
 router.post("/login", loginUser);
 
 //for customer Profile
+
 // update location
 router.put("/update-location/:id", updateUserLocation);
 
@@ -16,7 +17,10 @@ router.put("/update-total/:id", updateTotalSpent);
 // get profile
 router.get("/profile/:id", getUserProfile);
 
+// Routes for the Home Screen 
 
+router.get("/popular-services",getPopularServices)
+router.get("/recent-activity", getRecentActivity);
 
 
 export default router;
