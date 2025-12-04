@@ -254,10 +254,6 @@ export const getRecentActivity = async (req, res) => {
 
 //for Services Screen 
 
-
-
-
-
 export const getAllServicesGrouped = async (req, res) => {
   try {
     // ✅ Fetch only valid vendors
@@ -296,6 +292,9 @@ export const getAllServicesGrouped = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch services" });
   }
 };
+
+
+
 
 
 
