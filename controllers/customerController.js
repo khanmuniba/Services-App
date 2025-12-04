@@ -252,5 +252,52 @@ export const getRecentActivity = async (req, res) => {
   }
 };
 
+//for Services Screen 
+
+
+
+
+
+export const getAllServicesGrouped = async (req, res) => {
+  try {
+    // ✅ Fetch only valid vendors
+    const vendors = await Vendor.find({
+      status: "approved",
+      blocked: false,
+    });
+
+    // ✅ Group services by category
+    const groupedServices = {};
+
+    vendors.forEach((vendor) => {
+      const category = vendor.serviceCategory;
+
+      if (!groupedServices[category]) {
+        groupedServices[category] = [];
+      }
+
+      groupedServices[category].push({
+        _id: vendor._id,
+        title: vendor.subService,          // ✅ Sub-service name
+        category: vendor.serviceCategory,
+        description: vendor.description,
+        rating: vendor.rating,
+        vendorName: vendor.vendorName,
+        businessName: vendor.businessName,
+        location: vendor.businessAddress,
+        jobs: vendor.jobs,
+        successRate: vendor.successRate,
+      });
+    });
+
+    res.status(200).json(groupedServices);
+  } catch (error) {
+    console.error("Service Fetch Error:", error);
+    res.status(500).json({ message: "Failed to fetch services" });
+  }
+};
+
+
+
 
 

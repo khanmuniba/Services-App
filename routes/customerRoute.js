@@ -1,5 +1,5 @@
 import express from "express";
-import {  getPopularServices, getRecentActivity, getUserProfile, loginUser, registerUser, updateTotalSpent, updateUserLocation } from "../controllers/customerController.js";
+import {  getAllServicesGrouped, getPopularServices, getRecentActivity, getUserProfile, loginUser, registerUser, updateTotalSpent, updateUserLocation } from "../controllers/customerController.js";
 
 const router = express.Router();
 // routes for Login 
@@ -22,5 +22,7 @@ router.get("/profile/:id", getUserProfile);
 router.get("/popular-services",getPopularServices)
 router.get("/recent-activity", getRecentActivity);
 
+// routs for the Services Screen 
 
+router.get("/All-Services",getAllServicesGrouped)
 export default router;
