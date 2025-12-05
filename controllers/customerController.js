@@ -1,14 +1,11 @@
-import User from "../models/UserModel.js";
+
 import Booking from "../models/bookingModel.js";
+import User from "../models/UserModel.js"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 import Service from "../models/ServicesModel.js";
-// import dayjs from "dayjs";
-// import relativeTime from "dayjs/plugin/relativeTime";
-// import Booking from "../models/bookingModel.js";
 
-// dayjs.extend(relativeTime);
 // register Customer 
 export const registerUser = async (req, res) => {
   try {
@@ -55,8 +52,6 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 //Login User 
 
@@ -235,21 +230,20 @@ export const getPopularServices = async (req, res) => {
 // Get recent activity (recently completed jobs)
 export const getRecentActivity = async (req, res) => {
   try {
-    // Fetch the most recent completed bookings
     const recentBookings = await Booking.find({ status: "completed" })
-      .sort({ updatedAt: -1 }) // most recent first
-      .limit(5) // number of recent activities to show
-      .populate("vendorId", "vendorName businessName serviceCategory") // include vendor info
-      .populate("userId", "name"); // optional: include user info if needed
+      .sort({ updatedAt: -1 })
+      .limit(5)
+      .populate("vendor", "vendorName businessName serviceCategory")
+      .populate("customer", "name")
+      .populate("serviceId", "title description rating"); // populate service info
 
-    // Map the response to include only needed fields
     const recentActivity = recentBookings.map((booking) => ({
       _id: booking._id,
-      title: booking.serviceName,
-      description: booking.description,
-      vendorName: booking.vendorId?.vendorName,
-      serviceCategory: booking.vendorId?.serviceCategory,
-      rating: booking.rating,
+      title: booking.subService,                       // subService name
+      description: booking.serviceId?.description,     // optional
+      vendorName: booking.vendor?.vendorName,
+      serviceCategory: booking.vendor?.serviceCategory,
+      rating: booking.serviceId?.rating,
       updatedAt: booking.updatedAt,
     }));
 
@@ -259,6 +253,7 @@ export const getRecentActivity = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 //for Services Screen 
 
