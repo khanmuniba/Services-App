@@ -33,11 +33,12 @@ const startServer = async () => {
     const { default: adminRoute } = await import("./routes/adminRoute.js");
     const { default: vendorRoute } = await import("./routes/vendorRoutes.js");
     const { default: customerRoute } = await import("./routes/customerRoute.js");
-
+    const { default: bookingRoute } = await import("./routes/bookingRoutes.js");
     // USE ROUTES
     app.use("/api/admin", adminRoute);
     app.use("/api/vendor", vendorRoute);
     app.use("/api/customer", customerRoute);
+    app.use("/api/booking", bookingRoute);
 
     // ❗ NOW add 404 handler AFTER routes
     app.use((req, res, next) => {

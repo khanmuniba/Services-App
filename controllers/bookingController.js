@@ -1,9 +1,42 @@
 import Booking from "../models/bookingModel.js";
 
 
-// Get all bookings for a vendor (pending / upcoming / completed / cancelled)
-
 import mongoose from "mongoose";
+
+//controllr to create Booking and store that data in the booking Model
+
+export const createBooking = async (req, res) => {
+  try {
+    const { customerId, vendorId, serviceId, subService, address, date, time, notes, amount } = req.body;
+
+    if (!customerId || !vendorId || !serviceId || !subService || !address || !date || !time || !amount) {
+      return res.status(400).json({ error: 'Missing required booking fields.' });
+    }
+
+    const booking = await Booking.create({
+      customer: customerId, // now passed from frontend
+      vendor: vendorId,
+      serviceId,
+      subService,
+      address,
+      date: new Date(date),
+      time,
+      notes: notes || '',
+      amount,
+      status: 'pending_payment',
+    });
+
+    return res.status(201).json({ message: 'Booking created successfully.', booking });
+  } catch (error) {
+    console.error('Booking creation error:', error);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};
+
+
+
+
+
 
 export const getVendorBookings = async (req, res) => {
   try {
@@ -28,9 +61,6 @@ export const getVendorBookings = async (req, res) => {
   }
 };
 
-
-
-
 // Accept booking (changes status → upcoming)
 
 export const acceptBooking = async (req, res) => {
@@ -52,7 +82,6 @@ export const acceptBooking = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 // Cancel / Decline booking (changes status → cancelled)
 
@@ -76,9 +105,7 @@ export const cancelBooking = async (req, res) => {
   }
 };
 
-
-// Complete booking (changes status → completed)
-
+// Complete booking (changes status → complette
 export const completeBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;

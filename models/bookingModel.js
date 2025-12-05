@@ -7,32 +7,44 @@ const bookingSchema = new mongoose.Schema(
       ref: "Customer",
       required: true,
     },
-
     vendor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Vendor",
       required: true,
     },
-
-    subService: {
-      type: String, // store the subService directly from Vendor
+    serviceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Service",
       required: true,
     },
-
+    subService: {
+      type: String, // subService name from service
+      required: true,
+    },
+    address: {
+      type: String,
+      required: true,
+    },
+    date: {
+      type: Date,
+      required: true,
+    },
+    time: {
+      type: String, // store selected time slot as string
+      required: true,
+    },
+    notes: {
+      type: String,
+      default: "",
+    },
     amount: {
       type: Number,
       required: true,
     },
-
     status: {
       type: String,
-      enum: ["pending", "in-progress", "completed", "cancelled"],
-      default: "pending",
-    },
-
-    date: {
-      type: Date,
-      default: Date.now,
+      enum: ["pending_payment", "pending", "in-progress", "completed", "cancelled"],
+      default: "pending_payment", // payment pending by default
     },
   },
   { timestamps: true }
