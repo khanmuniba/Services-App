@@ -7,6 +7,7 @@ import {
   cancelBooking,
   completeBooking,
 } from "../controllers/bookingController.js";
+
 const router = express.Router();
 
 // Admin creates vendor
@@ -33,5 +34,6 @@ router.put("/booking/:bookingId/cancel", cancelBooking);
 // Complete booking
 router.put("/booking/:bookingId/complete", completeBooking);
 
-
+// to create a service 
+// router.post("/service", createService)
 export default router;

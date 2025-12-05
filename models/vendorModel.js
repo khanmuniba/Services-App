@@ -67,16 +67,23 @@ const vendorSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // ⭐ **Added Only This Field**
+    // ⭐ Only this field added
     successRate: {
       type: String,
       default: "0%",
     },
+
+    // Array of services linked to this vendor
+    services: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Service",
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true } // ✅ This is correctly placed as the second argument
 );
 
-
-const Vendor = mongoose.connection.models.Vendor || mongoose.model("Vendor", vendorSchema);
+// Prevent model overwrite if already compiled
+const Vendor = mongoose.models.Vendor || mongoose.model("Vendor", vendorSchema);
 export default Vendor;
-

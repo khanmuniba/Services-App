@@ -1,5 +1,5 @@
 import Service from "../models/ServicesModel.js";
-
+import Vendor from "../models/vendorModel.js"
 // Get service by ID
 export const getServiceById = async (req, res) => {
   try {
@@ -12,3 +12,8 @@ export const getServiceById = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+// controllers/serviceController.js
+
+
+

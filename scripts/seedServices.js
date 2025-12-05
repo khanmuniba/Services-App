@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Service from "./models/ServicesModel.js"; // ✅ Correct import
+import Service from "../models/ServicesModel.js"; // ✅ Correct import
 
 dotenv.config();
 

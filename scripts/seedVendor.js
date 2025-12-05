@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Vendor from "./models/vendorModel.js"; // adjust path if needed
+import Vendor from "../models/vendorModel.js"; // adjust path if needed
 import bcrypt from "bcryptjs";
 
 dotenv.config();

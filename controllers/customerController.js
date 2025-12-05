@@ -3,6 +3,7 @@ import User from "../models/UserModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Vendor from "../models/vendorModel.js";
+import Service from "../models/ServicesModel.js";
 // import dayjs from "dayjs";
 // import relativeTime from "dayjs/plugin/relativeTime";
 // import Booking from "../models/bookingModel.js";
@@ -197,40 +198,24 @@ export const getUserProfile = async (req, res) => {
 
 
 // Get top popular services by rating
+// controllers/popularServices.js
+
+
 export const getPopularServices = async (req, res) => {
   try {
-    // Fetch top 10 vendors sorted by rating (descending)
-    const vendors = await Vendor.find({ status: "approved", blocked: false })
-      .sort({ rating: -1 })
-      .limit(5)
-      .select(
-        "vendorName businessName serviceCategory subService rating jobs description"
-      );
+    const services = await Service.find({})
+      .sort({ createdAt: -1 }) // latest first
+      .limit(20)
+      .populate("vendorId", "vendorName businessName serviceCategory"); // include vendor info
 
-    res.status(200).json({ success: true, data: vendors });
-  } catch (error) {
-    console.error("Error fetching popular services:", error);
+    res.status(200).json({ success: true, data: services });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 
-// export const getRecentServices = async (req, res) => {
-//   try {
-//     // Sort by latest updated vendors with jobs > 0
-//     const vendors = await Vendor.find({ status: "approved", blocked: false, jobs: { $gt: 0 } })
-//       .sort({ updatedAt: -1 }) // or createdAt if you want newest vendors
-//       .limit(10)
-//       .select(
-//         "vendorName businessName serviceCategory subService rating jobs description"
-//       );
-
-//     res.status(200).json({ success: true, data: vendors });
-//   } catch (error) {
-//     console.error("Error fetching recent services:", error);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };
 
 // Get recent activity (recently completed jobs)
 export const getRecentActivity = async (req, res) => {
@@ -256,33 +241,28 @@ export const getRecentActivity = async (req, res) => {
 
 export const getAllServicesGrouped = async (req, res) => {
   try {
-    // ✅ Fetch only valid vendors
-    const vendors = await Vendor.find({
-      status: "approved",
-      blocked: false,
-    });
+    const services = await Service.find({})
+      .populate({
+        path: "vendorId",
+        select: "vendorName businessName serviceCategory serviceAddress",
+      });
 
-    // ✅ Group services by category
     const groupedServices = {};
 
-    vendors.forEach((vendor) => {
-      const category = vendor.serviceCategory;
+    services.forEach((service) => {
+      const category = service.category || "Other";
 
-      if (!groupedServices[category]) {
-        groupedServices[category] = [];
-      }
+      if (!groupedServices[category]) groupedServices[category] = [];
 
       groupedServices[category].push({
-        _id: vendor._id,
-        title: vendor.subService,          // ✅ Sub-service name
-        category: vendor.serviceCategory,
-        description: vendor.description,
-        rating: vendor.rating,
-        vendorName: vendor.vendorName,
-        businessName: vendor.businessName,
-        location: vendor.businessAddress,
-        jobs: vendor.jobs,
-        successRate: vendor.successRate,
+        _id: service._id, // ✅ service ID
+        title: service.title,
+        category: service.category,
+        description: service.description,
+        rating: service.rating,
+        vendorName: service.vendorId?.vendorName,
+        businessName: service.vendorId?.businessName,
+        location: service.vendorId?.businessAddress,
       });
     });
 
@@ -292,6 +272,7 @@ export const getAllServicesGrouped = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch services" });
   }
 };
+
 
 
 
