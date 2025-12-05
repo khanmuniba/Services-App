@@ -1,8 +1,8 @@
 import User from "../models/UserModel.js";
-
+import Booking from "../models/bookingModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import Vendor from "../models/vendorModel.js";
+
 import Service from "../models/ServicesModel.js";
 // import dayjs from "dayjs";
 // import relativeTime from "dayjs/plugin/relativeTime";
@@ -193,22 +193,36 @@ export const getUserProfile = async (req, res) => {
 
 
 
-/** 
- * COntrollers for the Home Screennnn */ 
 
-
-// Get top popular services by rating
-// controllers/popularServices.js
-
+//get popular services
 
 export const getPopularServices = async (req, res) => {
   try {
-    const services = await Service.find({})
-      .sort({ createdAt: -1 }) // latest first
-      .limit(20)
-      .populate("vendorId", "vendorName businessName serviceCategory"); // include vendor info
+    // Aggregate top-rated service per category
+    const topServices = await Service.aggregate([
+      // Sort by category and rating descending
+      { $sort: { category: 1, rating: -1 } },
+      // Group by category, take first (highest rating) service
+      {
+        $group: {
+          _id: "$category",
+          service: { $first: "$$ROOT" },
+        },
+      },
+      // Limit to 4 categories/services
+      { $limit: 4 },
+    ]);
 
-    res.status(200).json({ success: true, data: services });
+    // Populate vendor info after aggregation
+    const servicesWithVendor = await Service.populate(topServices, {
+      path: "service.vendorId",
+      select: "vendorName businessName serviceCategory",
+    });
+
+    // Map the result to return only the service object
+    const popularServices = servicesWithVendor.map((item) => item.service);
+
+    res.status(200).json({ success: true, data: popularServices });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });
@@ -217,20 +231,29 @@ export const getPopularServices = async (req, res) => {
 
 
 
+
 // Get recent activity (recently completed jobs)
 export const getRecentActivity = async (req, res) => {
   try {
-    const recentVendors = await Vendor.find({
-      status: "approved",
-      blocked: false,
-    })
+    // Fetch the most recent completed bookings
+    const recentBookings = await Booking.find({ status: "completed" })
       .sort({ updatedAt: -1 }) // most recent first
-      .limit(2) // only 2 vendors
-      .select(
-        "vendorName businessName serviceCategory subService rating jobs description updatedAt"
-      );
+      .limit(5) // number of recent activities to show
+      .populate("vendorId", "vendorName businessName serviceCategory") // include vendor info
+      .populate("userId", "name"); // optional: include user info if needed
 
-    res.status(200).json({ success: true, data: recentVendors });
+    // Map the response to include only needed fields
+    const recentActivity = recentBookings.map((booking) => ({
+      _id: booking._id,
+      title: booking.serviceName,
+      description: booking.description,
+      vendorName: booking.vendorId?.vendorName,
+      serviceCategory: booking.vendorId?.serviceCategory,
+      rating: booking.rating,
+      updatedAt: booking.updatedAt,
+    }));
+
+    res.status(200).json({ success: true, data: recentActivity });
   } catch (error) {
     console.error("Error fetching recent activity:", error);
     res.status(500).json({ success: false, message: "Server error" });
